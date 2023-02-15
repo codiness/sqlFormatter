@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A SQL formatter </title>
+  <meta name="description"
+        content="A SQL formatter is an online free tool that translates SQL code not readable into a readable format.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/codemirror.min.css">
+  <script src="scripts/codemirror/codemirror.min.js"></script>
+  <script src="scripts/codemirror/sql.js"></script>
+  <script src="scripts/codemirror/active-line.js"></script>
+</head>
+<body>
+<svg class="hidden">
+  <symbol id="play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path fill-rule="evenodd"
+          d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z"
+          clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path fill-rule="evenodd"
+          d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
+          clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="upload" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path fill-rule="evenodd"
+          d="M11.47 2.47a.75.75 0 011.06 0l4.5 4.5a.75.75 0 01-1.06 1.06l-3.22-3.22V16.5a.75.75 0 01-1.5 0V4.81L8.03 8.03a.75.75 0 01-1.06-1.06l4.5-4.5zM3 15.75a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
+          clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="link" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path fill-rule="evenodd"
+          d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z"
+          clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="copy" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round"
+          d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+  </symbol>
+</svg>
+<header class="shadow">
+  <nav class="bg-white border-gray-200 px-2 sm:px-4 py-2.5 rounded dark:bg-gray-900">
+    <div class="container flex flex-wrap justify-between items-center">
+      <a href="#" class="flex items-center">
+        <img src="images/logo.png" width="233" height="30"
+             alt="beautifier js | free online js beautifier &  js minifier &  js obfuscator">
+      </a>
+      <button data-collapse-toggle="navbar-default" type="button"
+              class="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+              aria-controls="navbar-default" aria-expanded="false">
+        <span class="sr-only">Open main menu</span>
+        <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd"
+                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                clip-rule="evenodd"></path>
+        </svg>
+      </button>
+      <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+        <ul class="flex flex-col p-4 mt-4 bg-gray-50 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+          <li>
+            <a href="#"
+               class="block py-2 pr-4 pl-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-amber-500 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+<main class="py-8">
+  <div class="container">
+    <div class="text-center mb-14">
+      <h1 class="text-3xl sm:text-4xl font-bold">Online SQL formatter</h1>
+      <p class="text-gray-900 mt-3">A SQL formatter is an online free tool that translates SQL code not readable into a readable format.</p>
+    </div>
+    <div class="flex flex-wrap sm:flex-nowrap gap-5 lg:gap-8">
+      <div class="w-full sm:w-1/2">
+        <div class="flex gap-3">
+          <button class="btn btn-white w-24" onclick="document.getElementById('loadfile').click();">
+            <svg class="w-5 h-5">
+              <use xlink:href="#upload"></use>
+            </svg>
+            File
+          </button>
+          <input type="file" id="loadfile" class="hidden" accept=".sql" onchange="onLoadFromFileClicked()"/>
+          <!-- Main modal -->
+          <div id="urlModal" tabindex="-1" aria-hidden="true"
+               class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 w-full md:inset-0 h-modal md:h-full justify-center items-center">
+            <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
+              <!-- Modal content -->
+              <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <!-- Modal header -->
+                <div class="flex justify-between items-start p-4 rounded-t border-b dark:border-gray-600">
+                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Enter your URL
+                  </h3>
+                  <button type="button"
+                          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                          data-modal-toggle="urlModal">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                         xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                  </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-6 space-y-6">
+                  <div class="">
+                    <label for="url-input"
+                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Your
+                      url</label>
+                    <input type="text" id="url-input"
+                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                           placeholder="..." required>
+                  </div>
+                </div>
+                <!-- Modal footer -->
+                <div class="flex items-center p-6 space-x-2 rounded-b border-t border-gray-200 dark:border-gray-600">
+                  <button data-modal-toggle="urlModal" onclick="onLoadFromUrlClicked()" type="button"
+                          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    Submit
+                  </button>
+                  <button data-modal-toggle="urlModal" type="button"
+                          class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-white w-24" onclick="onLoadFromUrlClicked()" data-modal-toggle="urlModal">
+            <svg class="w-5 h-5">
+              <use xlink:href="#link"></use>
+            </svg>
+            Url
+          </button>
+        </div>
+        <div class="border border-gray-300 mt-4">
+          <textarea id="input"></textarea>
+        </div>
+      </div>
+      <div class="w-full sm:w-1/2">
+        <div class="flex gap-3">
+          <button class="btn btn-white w-24" onclick="onCopyClicked()">
+            <svg class="w-5 h-5">
+              <use xlink:href="#copy"></use>
+            </svg>
+            Copy
+          </button>
+          <button class="btn btn-white w-24" onclick="onSaveClicked()">
+            <svg class="w-5 h-5">
+              <use xlink:href="#download"></use>
+            </svg>
+            Save
+          </button>
+        </div>
+        <div class="border border-gray-300 mt-4">
+          <textarea id="output"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="mt-4">
+      <div>
+        <div class="flex justify-center gap-3">
+          <button class="btn btn-yellow btn-md w-44" onclick="onFormatClicked()">Format</button>
+        </div>
+      </div>
+      <div class="flex flex-row lg:flex-col xl:flex-row justify-center lg:justify-start flex-wrap gap-6 mt-5 lg:-mt-12">
+        <div class="lg:max-w-[372px] 2xl:max-w-full">
+          <p class="text-lg font-bold text-gray-700">Settings:</p>
+          <div class="flex flex-wrap gap-5 mt-4">
+            <div class="w-44">
+              <label for="width" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tab Width:</label>
+              <input id="width" type="number"
+                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                     placeholder="your indent size ..." value="2">
+            </div>
+            <div class="w-44">
+              <label for="lang" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Language:</label>
+              <select id="lang" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option value="sql" selected>Sql</option>
+                <option value="bigquery">Bigquery</option>
+                <option value="db2">Db2</option>
+                <option value="hive">Hive</option>
+                <option value="mariadb">Mariadb</option>
+                <option value="mysql">Mysql</option>
+                <option value="n1ql">N1ql</option>
+                <option value="plsql">Plsql</option>
+                <option value="postgresql">Postgresql</option>
+                <option value="redshift">Redshift</option>
+                <option value="singlestoredb">Singlestoredb</option>
+                <option value="snowflake">Snowflake</option>
+                <option value="spark">Spark</option>
+                <option value="sqlite">Sqlite</option>
+                <option value="transactsql">Transactsql</option>
+                <option value="trino">Trino</option>
+              </select>
+            </div>
+            <div class="w-44">
+              <label for="case" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Keyword Case:</label>
+              <select id="case" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option value="upper" selected>Uppercase</option>
+                <option value="lower">Lowercase</option>
+                <option value="preserve">Preserve</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-24">
+      <div class="text-sm sm:text-base leading-6 sm:leading-8">
+        <h3 class="text-lg font-bold mb-2 capitalize mt-6">What is SQL formatter online free tool?</h3>
+        <p>
+          A SQL formatter is an online free tool that translates SQL code not readable into a readable format.
+        </p>
+        <p>
+          Even though it is presented new, all the original information is kept intact.
+          Creating a SQL Query formatter is a complex task, and it takes a lot of work to maintain these standards for every database model.
+        </p>
+        <p>So SQL formatter online is a tool to format your SQL query easily.</p>
+
+        <h3 class="text-lg font-bold mb-2 capitalize mt-2">Why SQL formatter online?</h3>
+        <p>The code can be read, understood, and debugged more quickly by developers if SQL format free queries are formatted correctly.</p>
+        <p>Additionally, it makes it easier for developers to understand the codes written by other developers.</p>
+
+        <h3 class="text-lg font-bold mb-2 capitalize mt-6">How to utilize this Online SQL Query Formatter Tool?</h3>
+        <h3 class="text-lg mb-2 capitalize mt-6">Formatting an Online SQL database involves the following steps:</h3>
+        <p>1. The SQL query should be entered into the editor.</p>
+        <p>2. Choose an indentation method using either spaces or tabs. You can choose the number of spaces to be indented at each level.</p>
+        <p>3. To convert all lowercase terms in the SQL query into uppercase ones, use the Uppercase option.</p>
+        <p>4. Simply clicking the "Format Query" button will cause the code to be formatted and shown in the output.</p>
+        <p>5. Simply clicking the "copy" button will copy the output.</p>
+        <p>6. Choose the Share-Output option from the drop-down menu to share the output code along with a link.</p>
+
+
+        <h3 class="text-lg font-bold mb-2 capitalize mt-2">Is the SQL formatter tool that you are using safe & secure?</h3>
+        <p>
+          The free SQL formatter online tool you're using is risk-free and dependable.
+          We will not store any of your data on our servers under any circumstances. None of the data may be seen by a third party.
+        </p>
+
+      </div>
+      <div class="content hidden text-sm sm:text-base leading-6 sm:leading-8">
+        <h3 class="text-lg font-bold mb-2 capitalize mt-6">What are the SQL formatter online free abilities?</h3>
+        <h3 class="text-lg mb-2 capitalize mt-6">The online free SQL formatter has some abilities that we listed for you below:</h3>
+        <p>&bull; SQL code uppercase converter: SQL code uppercase converter changes the case of each letter in a string such that all of the characters are capitalized.</p>
+        <p>&bull; SQL query lower upper case: SQL code lowercase converter changes the case of each letter in a string such that all of the characters are small.</p>
+        <p>&bull; SQL formatter big query: To format strings, SQL formatter bigquery provides the FORMAT () method. Format strings containing zero or more format specifiers and a list of extra arguments of any length that match the format specifiers are parsed and converted into STRINGs.</p>
+        <p>&bull; SQL formatter MariaDB: The SQL formatter MariaDB produces a string that has been formatted to look like a number with a specified number of decimal places in the form '#,###.##'.</p>
+        <p>&bull; SQL formatter plsql: A SQL formatter plsql will be used to restructure and organize PL/SQL code. It is common practice to refer to this code, program, or collection of instructions in PL/ SQL as the source code.</p>
+        <p>&bull; SQL formatter PostgreSQL online: The SQL formatter PostgreSQL online helps to make SQL statements more readable by modifying their formatting to conform to standard SQL formatting conventions. In Query Data, Execute Script, and a few object editors, you'll find a brand new feature called SQL Formatter.</p>
+        <p>&bull; SQL formatter single-store: The latest data-intensive applications can be powered by SQL formatter single-store fast, distributed, cloud SQL database. It is optimized for online transaction processing (OLTP) and online analytical processing (OLAP) workloads for the best possible application performance.</p>
+        <p>&bull; SQL formatter snowflake: SQL formatter snowflake (i.e., literals containing format strings) are used to define the mapping between numerical and string representations.</p>
+        <p>&bull; Format SQL spark: The Date format () method converts a given date into the format provided by the user. Code to Do Package Imports/import org.apache.spark.</p>
+
+
+        <p class="mt-5">
+          SQL.functions to execute date functions, format SQL spark functions package is loaded into the environment. / Using Current Date () and Date format function.
+        </p>
+      </div>
+      <span class="show-more-btn btn btn-white btn-md w-44 mx-auto cursor-pointer select-none mt-6">Show More Info</span>
+    </div>
+  </div>
+  <a href="#" id="dl" target="_blank" class="hidden"></a>
+</main>
+<footer class="py-6 bg-gray-200">
+  <div class="container flex items-center justify-between text-gray-500">
+    <span>Copyright © 2018-2019 </span>
+    <span>HTML formatter | All rights reserved</span>
+  </div>
+</footer>
+<script>
+  const showMoreBtn = document.querySelector(".show-more-btn");
+  showMoreBtn.addEventListener("click", function () {
+    document.querySelector(".content").classList.remove("hidden");
+    this.classList.add("hidden")
+  })
+</script>
+<script src="scripts/flowbite.js" defer></script>
+<script src="scripts/sql-formatter/sql-formatter.min.js" defer></script>
+<script src="scripts/sql-formatter/script.js" defer></script>
+</body>
+</html>
